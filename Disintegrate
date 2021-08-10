@@ -1,0 +1,101 @@
+package me.john.Disintegrate;
+
+import com.projectkorra.projectkorra.ProjectKorra;
+import com.projectkorra.projectkorra.ability.AddonAbility;
+import com.projectkorra.projectkorra.ability.FireAbility;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Particle;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.permissions.Permission;
+import org.bukkit.permissions.PermissionDefault;
+
+public class Disintegrate extends FireAbility implements AddonAbility {
+
+    private Listener listener;
+    private Permission perm;
+
+    private Block fire;
+
+    public Disintegrate(Player player, Block block) {
+        super(player);
+
+        bPlayer.addCooldown(this);
+        setType(block);
+        start();
+    }
+
+    private void setType(Block block) {
+        fire = block;
+        fire.setType(Material.AIR);
+    }
+
+    @Override
+    public void progress() {
+        Location loc = fire.getLocation();
+        loc.add(0.5, 0.5, 0.5);
+        loc.getWorld().spawnParticle(Particle.FLAME, loc, 10, 0.1, 0.1, 0.1, 0.01);
+
+        if (getStartTime() + 3000 < System.currentTimeMillis()) {
+            remove();
+        }
+    }
+
+    @Override
+    public Location getLocation() {
+        return player.getLocation();
+    }
+
+    @Override
+    public long getCooldown() {
+        return 1500;
+    }
+
+    @Override
+    public String getDescription() {
+        return "Simply Right click a block to Disintegrate the block with your fire!";
+    }
+
+    @Override
+    public void load() {
+        listener = new DisintegrateListener();
+        ProjectKorra.plugin.getServer().getPluginManager().registerEvents(listener, ProjectKorra.plugin);
+        perm = new Permission("bending.ability.Disintegrate");
+        perm.setDefault(PermissionDefault.OP);
+        ProjectKorra.plugin.getServer().getPluginManager().addPermission(perm);
+    }
+
+    @Override
+    public void stop() {
+        HandlerList.unregisterAll(listener);
+        ProjectKorra.plugin.getServer().getPluginManager().removePermission(perm);
+    }
+
+    @Override
+    public boolean isSneakAbility() {
+        return false;
+    }
+
+    @Override
+    public boolean isHarmlessAbility() {
+        return false;
+    }
+
+    @Override
+    public String getAuthor() {
+        return "John";
+    }
+
+    @Override
+    public String getVersion() {
+        return "1.0.0";
+    }
+
+    @Override
+    public String getName() {
+        return "Disintegrate";
+    }
+}
